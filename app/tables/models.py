@@ -8,6 +8,6 @@ class Tables(Base):
     __tablename__="tables"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    seats: Mapped[int]
+    seats: Mapped[int] # количество мест за столом
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
     

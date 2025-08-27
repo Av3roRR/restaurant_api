@@ -7,6 +7,10 @@ from alembic import context
 
 from app.database import Base
 from app.users.models import Users
+from app.tables.models import Tables
+from app.delivery.models import Delivery
+from app.bookings.models import Bookings
+from app.menu.models import Menu
 
 from app.config import settings
 # this is the Alembic Config object, which provides
