@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Response, Depends
 from pydantic import EmailStr
 
 from app.users.schemas import SRegistration
 from app.users.dao import UsersDAO
 
-from app.users.dependencies import check_user_info
+from app.users.dependencies import check_user_info, get_current_user
 
-from app.users.auth import get_password_hash, auth_user
+
+from app.users.auth import get_password_hash, auth_user, create_access_token
 
 router = APIRouter(
     prefix="/users",
@@ -37,5 +38,20 @@ async def user_registration(
     return "Учётная запись была создана!"
 
 @router.post("/log_in")
-async def user_login(email: EmailStr, password: str):
+async def user_login(response: Response, email: EmailStr, password: str):
     existing_user = await auth_user(email=email, password=password)
+    
+    cookie_jwt = create_access_token({"sub": existing_user.id})
+    
+    response.set_cookie("access_token", cookie_jwt, httponly=True)
+    
+    return {"access_token": cookie_jwt}
+
+@router.post("/log_out")
+def user_logout(response: Response):
+    response.delete_cookie("access_token")
+
+
+@router.get("/me")
+async def get_current_user(user = Depends(get_current_user)):
+    return user

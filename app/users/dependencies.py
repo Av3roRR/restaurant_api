@@ -1,9 +1,40 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends, Request
+
+from jose import jwt, JWTError
+from datetime import datetime, timezone
 
 from app.users.schemas import SRegistration
+from app.config import settings
+from app.users.dao import UsersDAO
 
-def get_current_user():
-    pass
+def get_token(request: Request):
+    cookie = request.cookies.get("access_token", None)
+    if cookie is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Невозможно определить пользователя")
+    
+    return cookie
+
+
+async def get_current_user(token = Depends(get_token)):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Некорректные данные в cookie")
+    
+    expire: str = payload.get("exp")
+    if not expire or (int(expire) < datetime.now(timezone.utc).timestamp()):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Токен был просрочен")
+    
+    user_id: id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Не удалось получить необходимые данные из cookie")
+    
+    user = await UsersDAO.find_by_id(model_id=user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Такого пользователя не существует")
+    
+    return user
+    
 
 
 def check_user_info(user_info: SRegistration):
