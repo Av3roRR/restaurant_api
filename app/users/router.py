@@ -18,7 +18,7 @@ router = APIRouter(
 async def user_registration(
     user_info: SRegistration
 ):
-    user = UsersDAO.find_one_or_none(email=user_info.email)
+    user = await UsersDAO.find_one_or_none(email=user_info.email)
         
     if user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь с таким email уже существует")
@@ -27,7 +27,7 @@ async def user_registration(
     
     hashed_password = get_password_hash(user_info.password)
     
-    UsersDAO.add(
+    await UsersDAO.add(
         name=user_info.name,
         surname=user_info.surname,
         hashed_password=hashed_password,
@@ -41,7 +41,7 @@ async def user_registration(
 async def user_login(response: Response, email: EmailStr, password: str):
     existing_user = await auth_user(email=email, password=password)
     
-    cookie_jwt = create_access_token({"sub": existing_user.id})
+    cookie_jwt = create_access_token({"sub": str(existing_user.id)})
     
     response.set_cookie("access_token", cookie_jwt, httponly=True)
     
@@ -53,5 +53,5 @@ def user_logout(response: Response):
 
 
 @router.get("/me")
-async def get_current_user(user = Depends(get_current_user)):
+async def current_user(user = Depends(get_current_user)):
     return user

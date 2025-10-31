@@ -18,14 +18,14 @@ def get_token(request: Request):
 async def get_current_user(token = Depends(get_token)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Некорректные данные в cookie")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
     
     expire: str = payload.get("exp")
     if not expire or (int(expire) < datetime.now(timezone.utc).timestamp()):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Токен был просрочен")
     
-    user_id: id = payload.get("sub")
+    user_id: int = int(payload.get("sub"))
     if not user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Не удалось получить необходимые данные из cookie")
     
