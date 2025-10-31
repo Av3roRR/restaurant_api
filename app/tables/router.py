@@ -5,3 +5,6 @@ router = APIRouter(
     tags=["Бронь столов"]
 )
 
+@router.post("/online_payment") # онлайн оплата через ЮКассу
+async def online_payment():
+    pass
