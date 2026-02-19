@@ -4,7 +4,7 @@ from pydantic import EmailStr
 from app.users.schemas import SRegistration
 from app.users.dao import UsersDAO
 
-from app.users.dependencies import check_user_info, get_current_user
+from app.users.dependencies import check_user_info, get_current_user, check_address
 
 
 from app.users.auth import get_password_hash, auth_user, create_access_token
@@ -47,6 +47,17 @@ async def user_login(response: Response, email: EmailStr, password: str):
     
     return {"access_token": cookie_jwt}
 
+@router.post("/set_user_address")
+async def get_user_address(new_address: str, user = Depends(get_current_user)):
+    check_address(new_address)
+    
+    response = await UsersDAO.update(id=user.id, field="base_address", data=new_address)
+    if user.base_address == "string":
+        return f"Был установлен новый адрес доставки: {new_address}"
+    else:
+        return f"Старый адрес доставки был обновлён на новый: {new_address}"
+
+
 @router.post("/log_out")
 def user_logout(response: Response):
     response.delete_cookie("access_token")
@@ -55,3 +66,4 @@ def user_logout(response: Response):
 @router.get("/me")
 async def current_user(user = Depends(get_current_user)):
     return user
+
