@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRES_MINUTES: int
     
+    SMTP_MAIL_HOST: str
+    SMTP_EMAIL: str
+    SMTP_PWD: str
+    
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()

@@ -25,11 +25,11 @@ async def get_current_user(token = Depends(get_token)):
     if not expire or (int(expire) < datetime.now(timezone.utc).timestamp()):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Токен был просрочен")
     
-    user_id: int = int(payload.get("sub"))
+    user_id: str = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Не удалось получить необходимые данные из cookie")
     
-    user = await UsersDAO.find_by_id(model_id=user_id)
+    user = await UsersDAO.find_by_id(model_id=int(user_id))
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Такого пользователя не существует")
     
@@ -81,3 +81,11 @@ def check_user_info(user_info: SRegistration):
     
     return True
 
+def check_address(address: str):
+    l = [chr(i) for i in range(ord("а"), ord("я") + 1)] + [chr(i) for i in range(ord("А"), ord("Я") + 1)] + [" ", "-", ".", ","]
+    
+    for el in address:
+        if el not in l:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Некорректный адрес доставки")
+        
+    return True

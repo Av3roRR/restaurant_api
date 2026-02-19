@@ -11,5 +11,6 @@ class Users(Base):
     name: Mapped[str] = mapped_column(String(30))
     surname: Mapped[str] = mapped_column(String(30))
     hashed_password: Mapped[str]
-    email: Mapped[Optional[str]]    
+    email: Mapped[Optional[str]]
+    phone_number: Mapped[Optional[str]] = mapped_column(default="8-")
     base_address: Mapped[Optional[str]]
