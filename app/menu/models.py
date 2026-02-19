@@ -10,4 +10,7 @@ class Menu(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50))
+    description: Mapped[Optional[str]]
+    price: Mapped[int]
+    in_stock: Mapped[bool] = mapped_column(default=True)
     image_id: Mapped[Optional[int]]

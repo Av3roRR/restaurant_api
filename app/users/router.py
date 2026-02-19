@@ -57,6 +57,15 @@ async def get_user_address(new_address: str, user = Depends(get_current_user)):
     else:
         return f"Старый адрес доставки был обновлён на новый: {new_address}"
 
+# доделать подтверждение через почту
+@router.post("/set_user_phone")
+async def get_user_phone(new_phone: str, user = Depends(get_current_user)):
+    response = await UsersDAO.update(id=user.id, field="phone_number", data=new_phone)
+    if response:
+        return "Данные были обновлены!"
+    else:
+        return "Произошла ошибка при обновлении данных!"
+
 
 @router.post("/log_out")
 def user_logout(response: Response):
