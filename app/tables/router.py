@@ -12,7 +12,7 @@ from datetime import datetime
 
 router = APIRouter(
     prefix="/tables",
-    tags=["Бронь столов"]
+    tags=["Столики"]
 )
 
 @router.get("/table/{id}")
@@ -29,6 +29,9 @@ async def online_payment(id: int):
 
 @router.post("/rent_table/{id}")
 async def rent_table(id: int, date_from: datetime, date_to: datetime, user = Depends(get_current_user)):
+    """Бронирование стола \n
+    Для того, чтобы забронировать стол нужно, чтобы пользователь был зарегистрирован
+    """
     table = await TablesDAO.get_by_id(id)
     
     if not table:
@@ -48,7 +51,19 @@ async def rent_table(id: int, date_from: datetime, date_to: datetime, user = Dep
 
 @router.post("/add_table")
 async def add_table(seats: int):
-    pass
+    if seats > 0 and seats <= 10:
+        await TablesDAO.add(seats=seats)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Некорректное количество мест")
+    
+
+@router.post("/update_table/{id}")
+async def update_table(id: int, seats: int):
+    if seats > 0 and seats <= 10:
+        await TablesDAO.update(id=id, fiels="seats", data=seats)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Некорректное количество мест")
+        
 
 @router.post("/delete_table/{id}")
 async def delete_table(id: int):
